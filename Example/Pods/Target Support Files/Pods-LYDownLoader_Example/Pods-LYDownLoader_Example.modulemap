@@ -1,0 +1,6 @@
+framework module Pods_LYDownLoader_Example {
+  umbrella header "Pods-LYDownLoader_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}

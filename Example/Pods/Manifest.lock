@@ -1,0 +1,16 @@
+PODS:
+  - LYDownLoader (0.1.0)
+
+DEPENDENCIES:
+  - LYDownLoader (from `../`)
+
+EXTERNAL SOURCES:
+  LYDownLoader:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  LYDownLoader: 1d324f34f72ba1e314c512215863b2807dfbce09
+
+PODFILE CHECKSUM: 6663e5283a58031bb69f5d19b5825c091cfa5148
+
+COCOAPODS: 1.2.1

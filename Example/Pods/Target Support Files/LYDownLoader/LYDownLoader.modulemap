@@ -1,0 +1,6 @@
+framework module LYDownLoader {
+  umbrella header "LYDownLoader-umbrella.h"
+
+  export *
+  module * { export * }
+}
