@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'LYDownLoader_Example' do
+  pod 'LYDownLoader', :path => '../'
+
+  target 'LYDownLoader_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
