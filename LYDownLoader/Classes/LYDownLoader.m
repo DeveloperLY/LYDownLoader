@@ -52,6 +52,9 @@
 /** 下载保存路径 */
 @property (nonatomic, copy) NSString *cacheFilePath;
 
+/** 输出流 */
+@property (nonatomic, strong)  NSOutputStream *outputStream;
+
 
 @end
 
@@ -124,17 +127,29 @@
     }
     
     // 继续接收数据
+    self.outputStream = [NSOutputStream outputStreamToFileAtPath:self.tmpFilePath append:YES];
+    [self.outputStream open];
     completionHandler(NSURLSessionResponseAllow);
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
     // 正在接收后续数据
     NSLog(@"正在接收后续数据...");
+    [self.outputStream write:data.bytes maxLength:data.length];
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
     // 请求完成
-    NSLog(@"请求完成");
+    [self.outputStream close];
+    self.outputStream = nil;
+    
+    if (!error) {
+        NSLog(@"请求完成--成功！");
+        [LYDownLoaderFileTool moveFile:self.tmpFilePath toPath:self.cacheFilePath];
+    } else {
+        NSLog(@"下载出错");
+    }
+    
 }
 
 #pragma mark - Setter And Getter
