@@ -30,8 +30,23 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_02.mp4"]];
+#pragma mark - Touch/Event
+
+- (IBAction)downLoad:(UIButton *)sender {
+    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_01.mp4"]];
+}
+
+- (IBAction)pause:(UIButton *)sender {
+    [self.downLoader pause];
+}
+
+- (IBAction)resume:(UIButton *)sender {
+    [self.downLoader resume];
+}
+
+
+- (IBAction)cancel:(UIButton *)sender {
+    [self.downLoader cancel];
 }
 
 #pragma mark - Getter

@@ -43,7 +43,7 @@
 /** 总文件大小 */
 @property (nonatomic, assign) int64_t totalSize;
 
-/** 会话 */
+/** 下载会话 */
 @property (nonatomic, strong) NSURLSession *session;
 
 /** 下载路径 */
@@ -55,6 +55,8 @@
 /** 输出流 */
 @property (nonatomic, strong)  NSOutputStream *outputStream;
 
+/** 下载任务 */
+@property (nonatomic, weak) NSURLSessionDataTask *dataTask;
 
 @end
 
@@ -75,18 +77,34 @@
         return;
     }
     
-    if (![LYDownLoaderFileTool isFileExists:self.tmpFilePath]) {
-        // 从0开始请求下载资源
-        [self downLoadWithURL:url bytesProgress:0];
-        NSLog(@"开始下载");
+    if ([url isEqual:self.dataTask.originalRequest.URL]) {
+        // TODO: 根据当前任务状态控制操作
         return;
     }
+    
+    // 下载地址不一样，取消当前的下载
+    [self cancel];
     
     // 读取本地缓存
     self.tmpSize = [LYDownLoaderFileTool fileSizeWithPath:self.tmpFilePath];
     [self downLoadWithURL:url bytesProgress:self.tmpSize];
 }
 
+- (void)pause {
+    [self.dataTask suspend];
+}
+
+- (void)resume {
+    [self.dataTask resume];
+}
+
+- (void)cancel {
+    [self.session invalidateAndCancel];
+    self.session = nil;
+    
+    // 删除缓存
+    [LYDownLoaderFileTool removeFileAtPath:self.tmpFilePath];
+}
 
 #pragma mark - Private Method
 - (void)downLoadWithURL:(NSURL *)url bytesProgress:(int64_t)bytesProgress {
@@ -95,6 +113,7 @@
     // NSURLSession 分配Task
     NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request];
     [dataTask resume];
+    self.dataTask = dataTask;
 }
 
 #pragma mark - NSURLSessionDataDelegate
