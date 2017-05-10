@@ -20,6 +20,12 @@ typedef void(^DownLoadInfoType)(int64_t downLoadFileSize);
 typedef void(^DownLoadSuccessType)(NSString *downLoadFilePath);
 typedef void(^DownLoadFailType)(NSError *error);
 
+@interface NSString (MD5)
+
+- (instancetype)md5String;
+
+@end
+
 @interface LYDownLoader : NSObject
 
 /** 下载状态 */

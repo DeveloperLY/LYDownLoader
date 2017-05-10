@@ -7,7 +7,7 @@
 //
 
 #import "LYViewController.h"
-#import "LYDownLoader/LYDownLoader.h"
+#import "LYDownLoader/LYDownLoadManager.h"
 
 #define WeakSelf __weak __typeof(&*self)weakSelf = self;
 
@@ -19,6 +19,7 @@
 @property (nonatomic, weak) NSTimer *timer;
 
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView2;
 
 @end
 
@@ -44,33 +45,54 @@
 - (IBAction)downLoad:(UIButton *)sender {
 //    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_06.mp4"]];
     
-    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_02.mp4"] downLoadInfo:^(int64_t downLoadFileSize) {
-        NSLog(@"fielSize:%lld", downLoadFileSize);
-    } success:^(NSString *downLoadFilePath) {
+//    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_02.mp4"] downLoadInfo:^(int64_t downLoadFileSize) {
+//        NSLog(@"fielSize:%lld", downLoadFileSize);
+//    } success:^(NSString *downLoadFilePath) {
+//        NSLog(@"filePath:%@", downLoadFilePath);
+//    } failed:^(NSError *error) {
+//        NSLog(@"%@", error.localizedDescription);
+//    }];
+//    
+//    
+//    WeakSelf
+//    self.downLoader.downLoadProgress = ^(CGFloat progress) {
+//        weakSelf.progressView.progress = progress;
+//        NSLog(@"progress: %.2f", progress);
+//    };
+    
+    [[LYDownLoadManager shareInstance] downLoadWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_06.mp4"] success:^(NSString *downLoadFilePath) {
         NSLog(@"filePath:%@", downLoadFilePath);
     } failed:^(NSError *error) {
         NSLog(@"%@", error.localizedDescription);
     }];
     
-    
+    LYDownLoader *downLoader =  [[LYDownLoadManager shareInstance] downLoadWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_06.mp4"]];
     WeakSelf
-    self.downLoader.downLoadProgress = ^(CGFloat progress) {
+    downLoader.downLoadProgress = ^(CGFloat progress) {
         weakSelf.progressView.progress = progress;
+        NSLog(@"progress: %.2f", progress);
+    };
+}
+- (IBAction)download2:(UIButton *)sender {
+    LYDownLoader *downLoader =  [[LYDownLoadManager shareInstance] downLoadWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_01.mp4"]];
+    WeakSelf
+    downLoader.downLoadProgress = ^(CGFloat progress) {
+        weakSelf.progressView2.progress = progress;
         NSLog(@"progress: %.2f", progress);
     };
 }
 
 - (IBAction)pause:(UIButton *)sender {
-    [self.downLoader pause];
+    [[LYDownLoadManager shareInstance] pauseAll];
 }
 
 - (IBAction)resume:(UIButton *)sender {
-    [self.downLoader resume];
+//    [self.downLoader resume];
 }
 
 
 - (IBAction)cancel:(UIButton *)sender {
-    [self.downLoader cancel];
+//    [self.downLoader cancel];
 }
 
 #pragma mark - Getter

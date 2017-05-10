@@ -13,13 +13,6 @@
 #define kTmpPath NSTemporaryDirectory()
 
 #import <CommonCrypto/CommonDigest.h>
-
-@interface NSString (MD5)
-
-- (instancetype)md5String;
-
-@end
-
 @implementation NSString (MD5)
 
 - (instancetype)md5String {

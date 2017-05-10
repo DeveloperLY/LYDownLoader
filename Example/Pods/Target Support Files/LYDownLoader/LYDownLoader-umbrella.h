@@ -12,6 +12,7 @@
 
 #import "LYDownLoader.h"
 #import "LYDownLoaderFileTool.h"
+#import "LYDownLoadManager.h"
 
 FOUNDATION_EXPORT double LYDownLoaderVersionNumber;
 FOUNDATION_EXPORT const unsigned char LYDownLoaderVersionString[];
