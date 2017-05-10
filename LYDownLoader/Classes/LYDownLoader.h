@@ -16,8 +16,32 @@ typedef NS_ENUM(NSUInteger, LYDownLoaderState) {
     LYDownLoaderStateFailed         // 下载失败
 };
 
+typedef void(^DownLoadInfoType)(int64_t downLoadFileSize);
+typedef void(^DownLoadSuccessType)(NSString *downLoadFilePath);
+typedef void(^DownLoadFailType)(NSError *error);
+
 @interface LYDownLoader : NSObject
 
+/** 下载状态 */
+@property (nonatomic, assign) LYDownLoaderState state;
+
+/** 下载进度 */
+@property (nonatomic, assign) CGFloat progress;
+
+/** 下载进度Block */
+@property (nonatomic, copy) void(^downLoadProgress)(CGFloat progress);
+
+/** 下载文件信息（下载文件大小） */
+@property (nonatomic, copy) DownLoadInfoType downLoadInfo;
+
+/** 状态改变 */
+@property (nonatomic, copy) void(^downLoadStateChange)(LYDownLoaderState state);
+
+/** 下载成功 */
+@property (nonatomic, copy) DownLoadSuccessType downLoadSuccess;
+
+/** 下载失败 */
+@property (nonatomic, copy) DownLoadFailType downLoadFailed;
 
 /**
  根据URL地址下载（如果已经在下载了，继续下载，否则从头下载）
@@ -26,6 +50,8 @@ typedef NS_ENUM(NSUInteger, LYDownLoaderState) {
  */
 - (void)downLoaderWithURL:(NSURL *)url;
 
+
+- (void)downLoaderWithURL:(NSURL *)url downLoadInfo:(DownLoadInfoType)downLoadInfo success:(DownLoadSuccessType)success failed:(DownLoadFailType)failed;
 
 /**
  暂停下载
@@ -50,7 +76,5 @@ typedef NS_ENUM(NSUInteger, LYDownLoaderState) {
  */
 - (void)cancelAndClearCache;
 
-/** 下载状态 */
-@property (nonatomic, assign) LYDownLoaderState state;
 
 @end

@@ -38,10 +38,10 @@
 @interface LYDownLoader () <NSURLSessionDataDelegate>
 
 /** 临时文件大小 */
-@property (nonatomic, assign) int64_t tmpSize;
+@property (nonatomic, assign) int64_t tmpFileSize;
 
 /** 总文件大小 */
-@property (nonatomic, assign) int64_t totalSize;
+@property (nonatomic, assign) int64_t totalFileSize;
 
 /** 下载会话 */
 @property (nonatomic, strong) NSURLSession *session;
@@ -63,18 +63,31 @@
 @implementation LYDownLoader
 
 #pragma mark - Public Method
+- (void)downLoaderWithURL:(NSURL *)url downLoadInfo:(DownLoadInfoType)downLoadInfo success:(DownLoadSuccessType)success failed:(DownLoadFailType)failed {
+    self.downLoadInfo = downLoadInfo;
+    self.downLoadSuccess = success;
+    self.downLoadFailed = failed;
+    
+    [self downLoaderWithURL:url];
+}
+
 - (void)downLoaderWithURL:(NSURL *)url {
     
     self.cacheFilePath = [kCachePath stringByAppendingPathComponent:url.lastPathComponent];
     self.tmpFilePath = [kTmpPath stringByAppendingPathComponent:[url.absoluteString md5String]];
     
-    NSLog(@"%@", kCachePath);
-    
     // 判断本地是否已经下载好
     if ([LYDownLoaderFileTool isFileExists:self.cacheFilePath]) {
-        // TODO: 告诉外界已经下载完成
-        NSLog(@"下载完成");
+        // 告诉外界已经下载完成
+        if (self.downLoadInfo) {
+            self.downLoadInfo([LYDownLoaderFileTool fileSizeWithPath:self.cacheFilePath]);
+        }
         self.state = LYDownLoaderStateSuccess;
+        
+        if (self.downLoadSuccess) {
+            self.downLoadSuccess(self.cacheFilePath);
+        }
+        
         return;
     }
     
@@ -94,8 +107,8 @@
     [self cancel];
     
     // 读取本地缓存
-    self.tmpSize = [LYDownLoaderFileTool fileSizeWithPath:self.tmpFilePath];
-    [self downLoadWithURL:url bytesProgress:self.tmpSize];
+    self.tmpFileSize = [LYDownLoaderFileTool fileSizeWithPath:self.tmpFilePath];
+    [self downLoadWithURL:url bytesProgress:self.tmpFileSize];
 }
 
 - (void)pause {
@@ -115,8 +128,6 @@
 - (void)cancel {
     [self.session invalidateAndCancel];
     self.session = nil;
-    
-    self.state = LYDownLoaderStateFailed;
 }
 
 - (void)cancelAndClearCache {
@@ -137,13 +148,17 @@
 
 #pragma mark - NSURLSessionDataDelegate
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSHTTPURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
-    self.totalSize = [response.allHeaderFields[@"Content-Length"] longLongValue];
+    self.totalFileSize = [response.allHeaderFields[@"Content-Length"] longLongValue];
     NSString *contentRangeStr = response.allHeaderFields[@"Content-Range"];
     if (contentRangeStr.length != 0) {
-        self.totalSize = [[contentRangeStr componentsSeparatedByString:@"/"].lastObject longLongValue];
+        self.totalFileSize = [[contentRangeStr componentsSeparatedByString:@"/"].lastObject longLongValue];
     }
     
-    if (self.tmpSize == self.totalSize) {
+    if (self.downLoadInfo) {
+        self.downLoadInfo(self.totalFileSize);
+    }
+    
+    if (self.tmpFileSize == self.totalFileSize) {
         // 移动到下载完成位置
         [LYDownLoaderFileTool moveFile:self.tmpFilePath toPath:self.cacheFilePath];
         
@@ -154,7 +169,7 @@
         return;
     }
     
-    if (self.tmpSize > self.totalSize) {
+    if (self.tmpFileSize > self.totalFileSize) {
         // 删除临时数据
         [LYDownLoaderFileTool removeFileAtPath:self.tmpFilePath];
         
@@ -175,7 +190,8 @@
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
     // 正在接收后续数据
-    NSLog(@"正在接收后续数据...");
+    self.tmpFileSize += data.length;
+    self.progress = 1.0 * self.tmpFileSize / self.totalFileSize;
     [self.outputStream write:data.bytes maxLength:data.length];
 }
 
@@ -185,12 +201,18 @@
     self.outputStream = nil;
     
     if (!error) {
-        NSLog(@"请求完成--成功！");
         [LYDownLoaderFileTool moveFile:self.tmpFilePath toPath:self.cacheFilePath];
         self.state = LYDownLoaderStateSuccess;
+        
+        if (self.downLoadSuccess) {
+            self.downLoadSuccess(self.cacheFilePath);
+        }
     } else {
-        NSLog(@"下载出错");
         self.state = LYDownLoaderStateFailed;
+        
+        if (self.downLoadFailed) {
+            self.downLoadFailed(error);
+        }
     }
     
 }
@@ -201,6 +223,25 @@
         _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     }
     return _session;
+}
+
+- (void)setState:(LYDownLoaderState)state {
+    if (_state == state) {
+        return;
+    }
+    _state = state;
+    
+    if (self.downLoadStateChange) {
+        self.downLoadStateChange(state);
+    }
+}
+
+- (void)setProgress:(CGFloat)progress {
+    _progress = progress;
+    
+    if (self.downLoadProgress) {
+        self.downLoadProgress(progress);
+    }
 }
 
 @end

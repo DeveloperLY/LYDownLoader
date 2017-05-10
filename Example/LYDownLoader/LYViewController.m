@@ -9,12 +9,16 @@
 #import "LYViewController.h"
 #import "LYDownLoader/LYDownLoader.h"
 
+#define WeakSelf __weak __typeof(&*self)weakSelf = self;
+
 @interface LYViewController ()
 
 /** 下载工具 */
 @property (nonatomic, strong) LYDownLoader *downLoader;
 
 @property (nonatomic, weak) NSTimer *timer;
+
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView;
 
 @end
 
@@ -32,13 +36,28 @@
 }
 
 - (void)update {
-    NSLog(@"下载状态----%zd", self.downLoader.state);
+//    NSLog(@"下载状态----%zd", self.downLoader.state);
 }
 
 #pragma mark - Touch/Event
 
 - (IBAction)downLoad:(UIButton *)sender {
-    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_04.mp4"]];
+//    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_06.mp4"]];
+    
+    [self.downLoader downLoaderWithURL:[NSURL URLWithString:@"http://120.25.226.186:32812/resources/videos/minion_02.mp4"] downLoadInfo:^(int64_t downLoadFileSize) {
+        NSLog(@"fielSize:%lld", downLoadFileSize);
+    } success:^(NSString *downLoadFilePath) {
+        NSLog(@"filePath:%@", downLoadFilePath);
+    } failed:^(NSError *error) {
+        NSLog(@"%@", error.localizedDescription);
+    }];
+    
+    
+    WeakSelf
+    self.downLoader.downLoadProgress = ^(CGFloat progress) {
+        weakSelf.progressView.progress = progress;
+        NSLog(@"progress: %.2f", progress);
+    };
 }
 
 - (IBAction)pause:(UIButton *)sender {
