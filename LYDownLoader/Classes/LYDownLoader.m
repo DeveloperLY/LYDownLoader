@@ -74,12 +74,20 @@
     if ([LYDownLoaderFileTool isFileExists:self.cacheFilePath]) {
         // TODO: 告诉外界已经下载完成
         NSLog(@"下载完成");
+        self.state = LYDownLoaderStateSuccess;
         return;
     }
     
     if ([url isEqual:self.dataTask.originalRequest.URL]) {
-        // TODO: 根据当前任务状态控制操作
-        return;
+        // 根据当前任务状态控制操作
+        if (self.state == LYDownLoaderStateDowning) {
+            return;
+        }
+        
+        if (self.state == LYDownLoaderStatePause) {
+            [self resume];
+            return;
+        }
     }
     
     // 下载地址不一样，取消当前的下载
@@ -91,17 +99,28 @@
 }
 
 - (void)pause {
-    [self.dataTask suspend];
+    if (self.state == LYDownLoaderStateDowning) {
+        [self.dataTask suspend];
+        self.state = LYDownLoaderStatePause;
+    }
 }
 
 - (void)resume {
-    [self.dataTask resume];
+    if (self.state == LYDownLoaderStatePause) {
+        [self.dataTask resume];
+        self.state = LYDownLoaderStateDowning;
+    }
 }
 
 - (void)cancel {
     [self.session invalidateAndCancel];
     self.session = nil;
     
+    self.state = LYDownLoaderStateFailed;
+}
+
+- (void)cancelAndClearCache {
+    [self cancel];
     // 删除缓存
     [LYDownLoaderFileTool removeFileAtPath:self.tmpFilePath];
 }
@@ -128,6 +147,8 @@
         // 移动到下载完成位置
         [LYDownLoaderFileTool moveFile:self.tmpFilePath toPath:self.cacheFilePath];
         
+        self.state = LYDownLoaderStateSuccess;
+        
         // 取消本次下载
         completionHandler(NSURLSessionResponseCancel);
         return;
@@ -141,11 +162,12 @@
         completionHandler(NSURLSessionResponseCancel);
         
         // 重新下载
-        [self downLoaderWithURL:response.URL];
+        [self downLoadWithURL:response.URL bytesProgress:0];
         return;
     }
     
     // 继续接收数据
+    self.state = LYDownLoaderStateDowning;
     self.outputStream = [NSOutputStream outputStreamToFileAtPath:self.tmpFilePath append:YES];
     [self.outputStream open];
     completionHandler(NSURLSessionResponseAllow);
@@ -165,8 +187,10 @@
     if (!error) {
         NSLog(@"请求完成--成功！");
         [LYDownLoaderFileTool moveFile:self.tmpFilePath toPath:self.cacheFilePath];
+        self.state = LYDownLoaderStateSuccess;
     } else {
         NSLog(@"下载出错");
+        self.state = LYDownLoaderStateFailed;
     }
     
 }

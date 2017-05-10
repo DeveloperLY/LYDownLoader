@@ -8,6 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSUInteger, LYDownLoaderState) {
+    LYDownLoaderStateUnKnown,       // 未知
+    LYDownLoaderStateDowning,       // 下载中
+    LYDownLoaderStatePause,         // 暂停
+    LYDownLoaderStateSuccess,       // 下载成功
+    LYDownLoaderStateFailed         // 下载失败
+};
+
 @interface LYDownLoader : NSObject
 
 
@@ -32,8 +40,17 @@
 
 
 /**
- 取消当前下载
+ 取消当前下载(不删除缓存)
  */
 - (void)cancel;
+
+
+/**
+ 取消下载和删除缓存
+ */
+- (void)cancelAndClearCache;
+
+/** 下载状态 */
+@property (nonatomic, assign) LYDownLoaderState state;
 
 @end
