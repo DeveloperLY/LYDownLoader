@@ -100,6 +100,12 @@ static LYDownLoadManager *_shareInstance;
     [downLoader pause];
 }
 
+- (void)resumeWithURL:(NSURL *)url {
+    NSString *urlKey = [url.absoluteString md5String];
+    LYDownLoader *downLoader = self.downLoadList[urlKey];
+    [downLoader resume];
+}
+
 - (void)cancelWithURL:(NSURL *)url {
     NSString *urlKey = [url.absoluteString md5String];
     LYDownLoader *downLoader = self.downLoadList[urlKey];
@@ -108,6 +114,10 @@ static LYDownLoadManager *_shareInstance;
 
 - (void)pauseAll {
     [[self.downLoadList allValues] makeObjectsPerformSelector:@selector(pause)];
+}
+
+- (void)resumeAll {
+    [[self.downLoadList allValues] makeObjectsPerformSelector:@selector(resume)];
 }
 
 #pragma mark - Getter And Getter

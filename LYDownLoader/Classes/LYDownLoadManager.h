@@ -19,8 +19,12 @@
 
 - (void)pauseWithURL:(NSURL *)url;
 
+- (void)resumeWithURL:(NSURL *)url;
+
 - (void)cancelWithURL:(NSURL *)url;
 
 - (void)pauseAll;
+
+- (void)resumeAll;
 
 @end
