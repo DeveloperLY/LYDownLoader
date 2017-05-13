@@ -8,7 +8,7 @@
 
 #import "LYDownLoadManager.h"
 
-@interface LYDownLoadManager ()
+@interface LYDownLoadManager () <NSCopying, NSMutableCopying>
 
 /** 下载任务表 */
 @property (nonatomic, strong) NSMutableDictionary <NSString *, LYDownLoader *> *downLoadList;
@@ -17,11 +17,12 @@
 
 @implementation LYDownLoadManager
 
+#pragma mark - Singleton
 /// 非绝对的单例
 static LYDownLoadManager *_shareInstance;
 + (instancetype)shareInstance {
     if (!_shareInstance) {
-        _shareInstance = [[LYDownLoadManager alloc] init];
+        _shareInstance = [[self alloc] init];
     }
     return _shareInstance;
 }
@@ -33,6 +34,14 @@ static LYDownLoadManager *_shareInstance;
             _shareInstance = [super allocWithZone:zone];
         });
     }
+    return _shareInstance;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    return _shareInstance;
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone {
     return _shareInstance;
 }
 
