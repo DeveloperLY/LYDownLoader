@@ -56,8 +56,9 @@
 @implementation LYDownLoader
 
 #pragma mark - Public Method
-- (void)downLoaderWithURL:(NSURL *)url downLoadInfo:(DownLoadInfoType)downLoadInfo success:(DownLoadSuccessType)success failed:(DownLoadFailType)failed {
+- (void)downLoaderWithURL:(NSURL *)url downLoadInfo:(DownLoadInfoType)downLoadInfo progress:(ProgressBlockType)progress success:(SuccessBlockType)success failed:(FailedBlockType)failed {
     self.downLoadInfo = downLoadInfo;
+    self.downLoadProgress = progress;
     self.downLoadSuccess = success;
     self.downLoadFailed = failed;
     

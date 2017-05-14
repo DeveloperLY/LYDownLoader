@@ -68,7 +68,7 @@ static LYDownLoadManager *_shareInstance;
     return downLoader;
 }
 
-- (void)downLoadWithURL:(NSURL *)url success:(DownLoadSuccessType)success failed:(DownLoadFailType)failed {
+- (void)downLoadWithURL:(NSURL *)url success:(SuccessBlockType)success failed:(FailedBlockType)failed {
     NSString *urlKey = [url.absoluteString md5String];
     
     LYDownLoader *downLoader = self.downLoadList[urlKey];

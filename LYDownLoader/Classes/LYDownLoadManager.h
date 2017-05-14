@@ -15,7 +15,7 @@
 
 - (LYDownLoader *)downLoadWithURL:(NSURL *)url;
 
-- (void)downLoadWithURL:(NSURL *)url success: (DownLoadSuccessType)success failed:(DownLoadFailType)failed;
+- (void)downLoadWithURL:(NSURL *)url success: (SuccessBlockType)success failed:(FailedBlockType)failed;
 
 - (void)pauseWithURL:(NSURL *)url;
 
